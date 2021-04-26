@@ -84,7 +84,11 @@ class ServiceTest {
     }
 
     @Test
-    void saveHomework() {
+    void saveValidHomework() {
+        Homework homework = new Homework("55", "valami", 4, 3);
+        int result = serviceBefore.saveHomework(homework.getID(), homework.getDescription(), homework.getDeadline(), homework.getStartline());
+        assertEquals(result, 1);
+        serviceBefore.deleteStudent(homework.getID());
     }
 
     @Test
@@ -107,6 +111,16 @@ class ServiceTest {
 
     @Test
     void deleteHomework() {
+        Collection<Homework> homeworks = (Collection<Homework>) serviceBefore.findAllHomework();
+        int before = homeworks.size();
+        Homework homework = new Homework("55", "valami", 4, 3);
+        serviceBefore.saveHomework(homework.getID(), homework.getDescription(), homework.getDeadline(), homework.getStartline());
+        serviceBefore.deleteHomework(homework.getID());
+        Collection<Homework> homeworksAfter = (Collection<Homework>) serviceBefore.findAllHomework();
+        int after = homeworks.size();
+        assertAll(() -> assertEquals(before, after),
+                () -> assertFalse(homeworksAfter.contains(homework))
+        );
     }
 
     @Test
