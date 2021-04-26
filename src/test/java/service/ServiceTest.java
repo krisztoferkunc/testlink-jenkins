@@ -3,26 +3,21 @@ package service;
 import domain.Grade;
 import domain.Homework;
 import domain.Student;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.*;
 import repository.GradeXMLRepository;
 import repository.HomeworkXMLRepository;
 import repository.StudentXMLRepository;
-import validation.GradeValidator;
-import validation.HomeworkValidator;
-import validation.StudentValidator;
-import validation.Validator;
+import validation.*;
+
+import java.util.Collection;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.*;
 
 class ServiceTest {
 
-    public static Service service;
+    private static Service serviceBefore;
 
-    @org.junit.jupiter.api.BeforeAll
+    @BeforeAll
     public static void setUp() {
         Validator<Student> studentValidator = new StudentValidator();
         Validator<Homework> homeworkValidator = new HomeworkValidator();
@@ -32,86 +27,101 @@ class ServiceTest {
         HomeworkXMLRepository fileRepository2 = new HomeworkXMLRepository(homeworkValidator, "homework.xml");
         GradeXMLRepository fileRepository3 = new GradeXMLRepository(gradeValidator, "grades.xml");
 
-        service = new Service(fileRepository1, fileRepository2, fileRepository3);
+        serviceBefore = new Service(fileRepository1, fileRepository2, fileRepository3);
     }
 
-    @org.junit.jupiter.api.AfterEach
+    @AfterEach
     void tearDown() {
     }
 
-    @org.junit.jupiter.api.Test
+    @Test
     void findAllStudents() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void findAllHomework() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void findAllGrades() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void saveStudent() {
-    }
-
-    @org.junit.jupiter.api.Test
-    @DisplayName("checking if homework save works")
-    void saveValidHomework() {
-        Homework hw = new Homework("77", "some easy homework", 6, 2);
-        int result = service.saveHomework(hw.getID(), hw.getDescription(), hw.getDeadline(), hw.getStartline());
-        assertEquals(0, result);
-        //assertTrue(result == 1);
-        service.deleteHomework(hw.getID());
-    }
-
-    @org.junit.jupiter.api.Test
-    void saveGrade() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void deleteStudent() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void deleteHomework() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void updateStudent() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void updateHomework() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void extendDeadline() {
-    }
-
-    @org.junit.jupiter.api.Test
-    void createStudentFile() {
+        Collection<Student> students = (Collection<Student>) serviceBefore.findAllStudents();
+        int before = students.size();
+        Student student = new Student("92", "Johny", 333);
+        serviceBefore.saveStudent(student.getID(), student.getName(), student.getGroup());
+        students = (Collection<Student>) serviceBefore.findAllStudents();
+        int after = students.size();
+        serviceBefore.deleteStudent(student.getID());
+        assertTrue(before == after - 1);
     }
 
     @Test
-    void assertAllTest(){
-        Student s = new Student("99", "Johan", 533);
-        assertAll(
-                "student",
-                () -> assertEquals("99", s.getID()),
-                () -> assertEquals("Johan", s.getName())
+    void findAllHomework() {
+        Collection<Homework> homeworks = (Collection<Homework>) serviceBefore.findAllHomework();
+        int before = homeworks.size();
+        Homework homework = new Homework("55", "valami", 4, 3);
+        serviceBefore.saveHomework(homework.getID(), homework.getDescription(), homework.getDeadline(), homework.getStartline());
+        homeworks = (Collection<Homework>) serviceBefore.findAllHomework();
+        int after = homeworks.size();
+        serviceBefore.deleteHomework(homework.getID());
+        assertTrue(before == after - 1);
+    }
+
+    @Test
+    void findAllGrades() {
+        // ?
+    }
+
+    @Test
+    @DisplayName("add valid student")
+    void saveValidStudent() {
+        Student student = new Student("90", "Johny", 532);
+        int result = serviceBefore.saveStudent(student.getID(), student.getName(), student.getGroup());
+        assertEquals(result, 1);
+        serviceBefore.deleteStudent(student.getID());
+    }
+
+    @Test
+    @DisplayName("add inValid student")
+    void saveInvalidStudent() {
+        assertThrows(ValidationException.class, () -> {
+            Student student = new Student("99", "Johny", 11532);
+            int result = serviceBefore.saveStudent(student.getID(), student.getName(), student.getGroup());
+            assertEquals(result, 0);
+            serviceBefore.deleteStudent(student.getID());
+        });
+    }
+
+    @Test
+    void saveHomework() {
+    }
+
+    @Test
+    void saveGrade() {
+    }
+
+    @Test
+    void deleteStudent() {
+        Collection<Student> students = (Collection<Student>) serviceBefore.findAllStudents();
+        int before = students.size();
+        Student student = new Student("92", "Johny", 333);
+        serviceBefore.saveStudent(student.getID(), student.getName(), student.getGroup());
+        serviceBefore.deleteStudent(student.getID());
+        Collection<Student> studentsAfter = (Collection<Student>) serviceBefore.findAllStudents();
+        int after = students.size();
+        assertAll(() -> assertEquals(before, after),
+                  () -> assertFalse(studentsAfter.contains(student))
         );
     }
 
-    @ParameterizedTest
-    @ValueSource(ints = {-10, 55, 533})
-    void testStudentAddByGroup(int group){
-        assumeTrue(group >= 0);
-        Student s = new Student("99", "Johan", group);
-        int result = service.saveStudent(s.getID(), s.getName(), s.getGroup());
-        assertEquals(1, result);
-        service.deleteStudent(s.getID());
+    @Test
+    void deleteHomework() {
     }
 
+    @Test
+    void updateStudent() {
+    }
 
+    @Test
+    void updateHomework() {
+    }
+
+    @Test
+    void extendDeadline() {
+    }
+
+    @Test
+    void createStudentFile() {
+    }
 }
