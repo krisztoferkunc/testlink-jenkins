@@ -35,10 +35,10 @@ public abstract class AbstractCRUDRepository<ID, E extends HasID<ID>> implements
             return entities.putIfAbsent(entity.getID(), entity);
         }
         catch (ValidationException ve) {
-            System.out.println("Entity is not valid! \n");
+            //System.out.println("Entity is not valid! \n");
             //TODO
-            throw new ValidationException("Test");
-            //return entity;
+            //throw new ValidationException("Test");
+            return entity;
         }
     }
 

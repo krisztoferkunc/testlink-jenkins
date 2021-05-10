@@ -2,6 +2,7 @@ package service;
 
 import domain.Grade;
 import domain.Homework;
+import domain.Pair;
 import domain.Student;
 import org.junit.jupiter.api.*;
 import repository.GradeXMLRepository;
@@ -105,7 +106,7 @@ class ServiceTest {
         Collection<Student> studentsAfter = (Collection<Student>) serviceBefore.findAllStudents();
         int after = students.size();
         assertAll(() -> assertEquals(before, after),
-                  () -> assertFalse(studentsAfter.contains(student))
+                () -> assertFalse(studentsAfter.contains(student))
         );
     }
 
@@ -121,6 +122,28 @@ class ServiceTest {
         assertAll(() -> assertEquals(before, after),
                 () -> assertFalse(homeworksAfter.contains(homework))
         );
+    }
+
+    @Test
+    @DisplayName("add valid grade")
+    void saveValidGrade() {
+        Homework homework = new Homework("55", "valami", 4, 3);
+        Student student = new Student("92", "Johny", 333);
+        serviceBefore.saveStudent(student.getID(), student.getName(), student.getGroup());
+        serviceBefore.saveHomework(homework.getID(), homework.getDescription(), homework.getDeadline(), homework.getStartline());
+        Grade grade = new Grade(new Pair<>(student.getID(), homework.getID()), 9.5, 3, "Cool");
+        int result = serviceBefore.saveGrade(grade.getID().getObject1(), grade.getID().getObject2(), grade.getGrade(), grade.getDeliveryWeek(), grade.getFeedback());
+        serviceBefore.deleteHomework(homework.getID());
+        serviceBefore.deleteStudent(student.getID());
+        assertEquals(result, 0);
+    }
+
+    @Test
+    @DisplayName("add invalid grade")
+    void saveInvalidGrade() {
+        Grade grade = new Grade(new Pair<>("", ""), -1, 3, "Cool");
+        int result = serviceBefore.saveGrade(grade.getID().getObject1(), grade.getID().getObject2(), grade.getGrade(), grade.getDeliveryWeek(), grade.getFeedback());
+        assertEquals(result, -1);
     }
 
     @Test
